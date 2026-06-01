@@ -28,14 +28,14 @@ jobs:
       # 结合你上一轮的 GCC 命令行注入黑魔法，在这里一键注入你所有的核心宏参数 [|]
       run: |
         wget -q https://github.com/fifbroman8/hotspot-bin/releases/download/v1.0.0/x86_64-buildroot-linux-musl_sdk-buildroot.tar.gz
-        sudo tar xf x86_64-buildroot-linux-musl_sdk-buildroot.tar.gz -C /
-        sudo /x86_64-buildroot-linux-musl_sdk-buildroot/relocate-sdk.sh
+        tar xf x86_64-buildroot-linux-musl_sdk-buildroot.tar.gz 
+        $PWD/x86_64-buildroot-linux-musl_sdk-buildroot/relocate-sdk.sh
         git clone https://github.com/kdab/hotspot 
         cd hotspot
         git submodule update --init
         mkdir b
         cd b
-        cmake .. -DCMAKE_TOOLCHAIN_FILE=/x86_64-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=../../x86_64-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake
         cmake --build -j4
         
     - name: 🔍 4. 像素级“验尸”核验：确保它是纯静态无依赖金身
