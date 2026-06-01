@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-24.04 # 部署在最纯正、高性能的宿主机环境中
+    runs-on: ubuntu-latest # 部署在最纯正、高性能的宿主机环境中
 
     steps:
     - name: 📂 1. 拉取当前项目最新代码
