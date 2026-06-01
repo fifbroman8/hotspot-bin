@@ -26,6 +26,7 @@ jobs:
 
     - name: 🏗️ 3. 执行现代 CMake 100% 纯静态锁频总攻编译
       # 结合你上一轮的 GCC 命令行注入黑魔法，在这里一键注入你所有的核心宏参数 [|]
+      shell: sudo bash {0}
       run: |
         wget -q https://github.com/fifbroman8/hotspot-bin/releases/download/v1.0.0/x86_64-buildroot-linux-musl_sdk-buildroot.tar.gz
         tar xf x86_64-buildroot-linux-musl_sdk-buildroot.tar.gz 
