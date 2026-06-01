@@ -35,6 +35,7 @@ jobs:
         git submodule update --init
         mkdir b
         cd b
+        cat /proc/cpuinfo
         cmake .. -DCMAKE_TOOLCHAIN_FILE=../../x86_64-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake
         cmake --build -j4
         
