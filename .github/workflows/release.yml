@@ -35,7 +35,7 @@ jobs:
         mkdir b
         cd b
         cmake .. -DCMAKE_TOOLCHAIN_FILE=../../x86_64-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake
-        cmake --build
+        cmake --build . -j 4
         
     - name: 🔍 4. 像素级“验尸”核验：确保它是纯静态无依赖金身
       run: |
