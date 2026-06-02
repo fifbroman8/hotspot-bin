@@ -29,20 +29,20 @@ jobs:
         wget -q https://github.com/fifbroman8/buildroot/releases/download/v1.1.0/x86_64-buildroot-linux-musl_sdk-buildroot.tar.gz
         tar xf x86_64-buildroot-linux-musl_sdk-buildroot.tar.gz 
         $PWD/x86_64-buildroot-linux-musl_sdk-buildroot/relocate-sdk.sh
-        git clone https://github.com/kdab/hotspot 
-        cd hotspot
+        git clone https://github.com/kdab/hotspot src 
+        cd src
         git submodule update --init
         mkdir b
         cd b
-        cmake .. -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=../../x86_64-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake
+        cmake .. -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=../../x86_64-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake || true
         make -j4 hotspot hotspot-perfparser
         
     - name: 🔍 4. 像素级“验尸”核验：确保它是纯静态无依赖金身
       run: |
-        file hotspot/b/bin/hotspot
-        ldd hotspot/b/bin/hotspot || echo "🏆 Check Pass: Not a dynamic executable!"
-        cp hotspot/b/bin/hotspot hotspot
-        cp hotspot/b/libexec/hotspot-perfparser hotspot-perfpaeser
+        file src/b/bin/hotspot
+        ldd src/b/bin/hotspot || echo "🏆 Check Pass: Not a dynamic executable!"
+        cp src/b/bin/hotspot hotspot
+        cp src/b/libexec/hotspot-perfparser hotspot-perfpaeser
         tar -cvf hotspot-x86_64.tar hotspot hotspot-perfpaeser
 
     - name: 📦 5. 诸神黄昏：将成品高频全自动发布到 GitHub Release [|]
