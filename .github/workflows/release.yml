@@ -39,16 +39,16 @@ jobs:
         
     - name: 🔍 4. 像素级“验尸”核验：确保它是纯静态无依赖金身
       run: |
-        file bin/hotspot
-        ldd bin/hotspot || echo "🏆 Check Pass: Not a dynamic executable!"
+        file hotspot/b/bin/hotspot
+        ldd hotspot/b/bin/hotspot || echo "🏆 Check Pass: Not a dynamic executable!"
 
     - name: 📦 5. 诸神黄昏：将成品高频全自动发布到 GitHub Release [|]
       uses: softprops/action-gh-release@v2
       with:
         # 🚨 终极安全防线：把你刚刚编译出来的、没有任何外部动态纠缠的单文件绝对路径死死锁在这里 [|]
         files: |
-          bin/hotspot
-          libexec/hotspot-perfparser
+          hotspot/b/bin/hotspot
+          hotspot/b/libexec/hotspot-perfparser
         # 自动将你当前触发的 Git Tag 名字（如 v1.0.0）作为 Release 的官方大标题 [|]
         name: "Release ${{ github.ref_name }}"
         # 自动生成更新日志（Markdown 格式） [|]
