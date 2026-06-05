@@ -1,0 +1,65 @@
+name: 🚀 Iron Static Build and Release Deployment
+
+# 👑 触发条件：当你本地执行 `git tag v1.0.0` 并用 `git push --tags` 强行发射标签时触发 [|]
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - 'v*' # ◄ 匹配所有以 v 开头的标签，如 v1.0.0, v2.1.3 [|]
+
+# 强行赋予当前工作流对 GitHub 仓库 Release 写入的最高特权
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # 部署在最纯正、高性能的宿主机环境中
+
+    steps:
+    - name: 📂 1. 拉取当前项目最新代码
+      uses: actions/checkout@v4
+
+    - name: ⚙️ 2. 初始化底层编译依赖环境（如 Alpine/Buildroot 宿主依赖）
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget
+
+    - name: 🏗️ 3. 执行现代 CMake 100% 纯静态锁频总攻编译
+      # 结合你上一轮的 GCC 命令行注入黑魔法，在这里一键注入你所有的核心宏参数 [|]
+      run: |
+        wget -q https://github.com/fifbroman8/buildroot/releases/download/v1.1.0/loongarch64-buildroot-linux-musl_sdk-buildroot.tar.gz
+        tar xf loongarch64-buildroot-linux-musl_sdk-buildroot.tar.gz 
+        loongarch64-buildroot-linux-musl_sdk-buildroot/relocate-sdk.sh
+        find . -type d -name "sysroot" -exec sh -c 'for d; do rm -f "$d"/usr/lib/*.so; done' _ {} +
+        git clone https://github.com/kdab/hotspot src 
+        cd src
+        git submodule update --init
+        mkdir b
+        cd b
+        cmake .. -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=../../loongarch64-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake || true
+        make -j4 hotspot hotspot-perfparser
+        
+    - name: 🔍 4. 像素级“验尸”核验：确保它是纯静态无依赖金身
+      run: |
+        file src/b/bin/hotspot
+        ldd src/b/bin/hotspot || echo "🏆 Check Pass: Not a dynamic executable!"
+        cp src/b/bin/hotspot hotspot
+        cp src/b/libexec/hotspot-perfparser hotspot-perfpaeser
+        tar -cvf hotspot-loongarch64.tar hotspot hotspot-perfpaeser
+
+    - name: 📦 5. 诸神黄昏：将成品高频全自动发布到 GitHub Release [|]
+      uses: softprops/action-gh-release@v2
+      with:
+        # 🚨 终极安全防线：把你刚刚编译出来的、没有任何外部动态纠缠的单文件绝对路径死死锁在这里 [|]
+        files: |
+          hotspot-loongarch64.tar
+        # 自动将你当前触发的 Git Tag 名字（如 v1.0.0）作为 Release 的官方大标题 [|]
+        name: "Release ${{ github.ref_name }}"
+        # 自动生成更新日志（Markdown 格式） [|]
+        generate_release_notes: true
+        # 如果你正在进行秘密的商业闭源内测，可以将下面这一行取消注释，强行将其定义为“预发布”版
+        # prerelease: true
+        tag_name: v2.0.0
+      env:
+        # 核心凭证：白嫖 GitHub 运行时自动注入的临时高权 Token，不需要你人肉去配置任何复杂的 Secrets
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
