@@ -3,7 +3,6 @@ name: 🚀 Iron Static Build and Release Deployment
 # 👑 触发条件：当你本地执行 `git tag v1.0.0` 并用 `git push --tags` 强行发射标签时触发 [|]
 on:
   push:
-    branches: ["main"]
     tags:
       - 'v*' # ◄ 匹配所有以 v 开头的标签，如 v1.0.0, v2.1.3 [|]
 
@@ -59,7 +58,6 @@ jobs:
         generate_release_notes: true
         # 如果你正在进行秘密的商业闭源内测，可以将下面这一行取消注释，强行将其定义为“预发布”版
         # prerelease: true
-        tag_name: v2.0.0
       env:
         # 核心凭证：白嫖 GitHub 运行时自动注入的临时高权 Token，不需要你人肉去配置任何复杂的 Secrets
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
