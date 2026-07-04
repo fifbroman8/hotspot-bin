@@ -47,8 +47,8 @@ jobs:
         file src/b/bin/hotspot
         ldd src/b/bin/hotspot || echo "🏆 Check Pass: Not a dynamic executable!"
         cp src/b/bin/hotspot hotspot
-        cp src/b/libexec/hotspot-perfparser hotspot-perfpaeser
-        tar -czvf hotspot-${{ matrix.cpu }}.tar.gz hotspot hotspot-perfpaeser
+        cp src/b/libexec/hotspot-perfparser hotspot-perfparser
+        tar -czvf hotspot-${{ matrix.cpu }}.tar.gz hotspot hotspot-perfparser
 
     - name: 📦 5. 诸神黄昏：将成品高频全自动发布到 GitHub Release [|]
       uses: softprops/action-gh-release@v2
