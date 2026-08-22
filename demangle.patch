@@ -1,0 +1,47 @@
+diff --git a/app/demangler.cpp b/app/demangler.cpp
+index c2c6959..475c17c 100644
+--- a/app/demangler.cpp
++++ b/app/demangler.cpp
+@@ -22,6 +22,10 @@
+ #include <QLibrary>
+ #include <QDebug>
+ 
++extern "C" {
++#include <libiberty/demangle.h>
++}
++
+ /* Demangler specification
+  * int demangler(const char* mangledSymbol, char* demangledBuffer, size_t bufferSize)
+  *
+@@ -36,12 +40,29 @@ bool startsWith(const char* string, const QByteArray& prefix) {
+ 
+ Demangler::Demangler()
+ {
+-    loadDemangleLib(QStringLiteral("rustc_demangle"), "rustc_demangle", QByteArrayLiteral("_R"));
+-    loadDemangleLib(QStringLiteral("d_demangle"), "demangle_symbol", QByteArrayLiteral("_D"));
++    //loadDemangleLib(QStringLiteral("rustc_demangle"), "rustc_demangle", QByteArrayLiteral("_R"));
++    //loadDemangleLib(QStringLiteral("d_demangle"), "demangle_symbol", QByteArrayLiteral("_D"));
+ }
+ 
+ bool Demangler::demangle(const char *mangledSymbol, char *demangleBuffer, size_t demangleBufferLength)
+ {
++    if (!mangledSymbol || !demangleBuffer || demangleBufferLength == 0) {
++        return false;
++    }
++
++    int options = DMGL_AUTO | DMGL_ANSI;
++    char* result = cplus_demangle(mangledSymbol, options);
++
++    if (result != nullptr) {
++        strncpy(demangleBuffer, result, demangleBufferLength - 1);
++        demangleBuffer[demangleBufferLength - 1] = '\0';
++
++        free(result);
++        return true;
++    }
++
++    return false;
++
+     // fast path, some languages (like rust since 1.37 or d) share a common prefix
+     // try these first
+     for (const auto& demangler : std::as_const(m_demanglers)) {
