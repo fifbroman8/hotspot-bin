@@ -1,7 +1,19 @@
-diff --git a/app/demangler.cpp b/app/demangler.cpp
+diff --git a/perfparser.cmake b/perfparser.cmake
+index 18b62b3..c45a83a 100644
+--- a/perfparser.cmake
++++ b/perfparser.cmake
+@@ -41,6 +41,7 @@ PUBLIC
+     Qt::Network
+     ${LIBDW_LIBRARIES}
+     ${LIBELF_LIBRARIES}
++    iberty
+ )
+ 
+ if (Zstd_FOUND)
+diff --git a/perfparser/app/demangler.cpp b/perfparser/app/demangler.cpp
 index c2c6959..475c17c 100644
---- a/app/demangler.cpp
-+++ b/app/demangler.cpp
+--- a/perfparser/app/demangler.cpp
++++ b/perfparser/app/demangler.cpp
 @@ -22,6 +22,10 @@
  #include <QLibrary>
  #include <QDebug>
