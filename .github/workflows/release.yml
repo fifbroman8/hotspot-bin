@@ -37,7 +37,7 @@ jobs:
         git clone https://github.com/kdab/hotspot src 
         cd src
         git submodule update --init
-        (cd 3rdparty/perfparser; patch -p1 < ../../../demangle.patch)
+        (cd 3rdparty; patch -p1 < ../../demangle.patch)
         mkdir b
         cd b
         cmake .. -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=../../${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake || true
