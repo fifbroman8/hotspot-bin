@@ -1,8 +1,12 @@
 diff --git a/3rdparty/perfparser.cmake b/3rdparty/perfparser.cmake
-index 18b62b3..966e465 100644
+index 18b62b3..c6af28c 100644
 --- a/3rdparty/perfparser.cmake
 +++ b/3rdparty/perfparser.cmake
-@@ -41,6 +41,7 @@ PUBLIC
+@@ -38,9 +38,11 @@ add_library(libhotspot-perfparser STATIC
+ target_link_libraries(libhotspot-perfparser
+ PUBLIC
+     Qt::Core
++    Qt::Gui
      Qt::Network
      ${LIBDW_LIBRARIES}
      ${LIBELF_LIBRARIES}
@@ -10,7 +14,7 @@ index 18b62b3..966e465 100644
  )
  
  if (Zstd_FOUND)
-@@ -58,7 +59,7 @@ add_feature_info(debuginfod HAVE_DWFL_GET_DEBUGINFOD_CLIENT "libdwfl and libdebu
+@@ -58,7 +60,7 @@ add_feature_info(debuginfod HAVE_DWFL_GET_DEBUGINFOD_CLIENT "libdwfl and libdebu
  
  configure_file(perfparser/app/config-perfparser.h.in perfparser/app/config-perfparser.h)
  
@@ -67,10 +71,19 @@ index c2c6959..475c17c 100644
      // try these first
      for (const auto& demangler : std::as_const(m_demanglers)) {
 diff --git a/3rdparty/perfparser/app/main.cpp b/3rdparty/perfparser/app/main.cpp
-index 3dba310..968db1f 100644
+index 3dba310..d8b12b4 100644
 --- a/3rdparty/perfparser/app/main.cpp
 +++ b/3rdparty/perfparser/app/main.cpp
-@@ -141,7 +141,7 @@ std::unique_ptr<QIODevice> initInfile(const QCommandLineParser& parser, const QC
+@@ -28,7 +28,7 @@
+ 
+ #include <QAbstractSocket>
+ #include <QCommandLineParser>
+-#include <QCoreApplication>
++#include <QGuiApplication>
+ #include <QDebug>
+ #include <QDir>
+ #include <QFile>
+@@ -141,12 +141,12 @@ std::unique_ptr<QIODevice> initInfile(const QCommandLineParser& parser, const QC
      return std::make_unique<PerfStdin>();
  }
  
@@ -79,6 +92,12 @@ index 3dba310..968db1f 100644
  {
      QCoreApplication::setApplicationName(QStringLiteral("perfparser"));
      QCoreApplication::setApplicationVersion(QStringLiteral("10.0"));
+ 
+-    QCoreApplication app(argc, argv);
++    QGuiApplication app(argc, argv);
+ 
+     if (qEnvironmentVariableIsSet("PERFPARSER_DEBUG_WAIT")) {
+ #ifdef Q_OS_LINUX
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 index 7424533..7ea7848 100644
 --- a/src/CMakeLists.txt
@@ -109,7 +128,7 @@ index 1da2636..0b51b06 100644
      QCoreApplication::setOrganizationName(QStringLiteral("KDAB"));
      QCoreApplication::setOrganizationDomain(QStringLiteral("kdab.com"));
 diff --git a/src/parsers/perf/perfparser.cpp b/src/parsers/perf/perfparser.cpp
-index 52ee2e2..bf7f4a8 100644
+index 52ee2e2..6e64743 100644
 --- a/src/parsers/perf/perfparser.cpp
 +++ b/src/parsers/perf/perfparser.cpp
 @@ -660,6 +660,7 @@ QProcessEnvironment perfparserEnvironment(const QStringList& debuginfodUrls)
@@ -120,3 +139,15 @@ index 52ee2e2..bf7f4a8 100644
      return env;
  }
  }
+@@ -1619,8 +1620,9 @@ bool PerfParser::initParserArgs(const QString& path)
+     // check perfparser and set initial values
+     auto parserBinary = Util::perfParserBinaryPath();
+     if (parserBinary.isEmpty()) {
+-        emit parsingFailed(tr("Failed to find hotspot-perfparser binary."));
+-        return false;
++        //emit parsingFailed(tr("Failed to find hotspot-perfparser binary."));
++        //return false;
++        parserBinary = QCoreApplication::applicationFilePath();
+     }
+ 
+     auto parserArgs = [](const QString& filename) {
