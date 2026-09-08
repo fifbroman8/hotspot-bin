@@ -1,15 +1,3 @@
-diff --git a/3rdparty/perfparser.cmake b/3rdparty/perfparser.cmake
-index 18b62b3..c45a83a 100644
---- a/3rdparty/perfparser.cmake
-+++ b/3rdparty/perfparser.cmake
-@@ -41,6 +41,7 @@ PUBLIC
-     Qt::Network
-     ${LIBDW_LIBRARIES}
-     ${LIBELF_LIBRARIES}
-+    iberty
- )
- 
- if (Zstd_FOUND)
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index b6885c2..f924a98 100644
 --- a/CMakeLists.txt
