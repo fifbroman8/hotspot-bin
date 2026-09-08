@@ -1,7 +1,7 @@
-diff --git a/perfparser.cmake b/perfparser.cmake
-index 18b62b3..c45a83a 100644
---- a/perfparser.cmake
-+++ b/perfparser.cmake
+diff --git a/3rdparty/perfparser.cmake b/3rdparty/perfparser.cmake
+index 18b62b3..966e465 100644
+--- a/3rdparty/perfparser.cmake
++++ b/3rdparty/perfparser.cmake
 @@ -41,6 +41,7 @@ PUBLIC
      Qt::Network
      ${LIBDW_LIBRARIES}
@@ -10,10 +10,19 @@ index 18b62b3..c45a83a 100644
  )
  
  if (Zstd_FOUND)
-diff --git a/perfparser/app/demangler.cpp b/perfparser/app/demangler.cpp
+@@ -58,7 +59,7 @@ add_feature_info(debuginfod HAVE_DWFL_GET_DEBUGINFOD_CLIENT "libdwfl and libdebu
+ 
+ configure_file(perfparser/app/config-perfparser.h.in perfparser/app/config-perfparser.h)
+ 
+-add_executable(hotspot-perfparser
++add_library(hotspot-perfparser STATIC
+     perfparser/app/main.cpp
+ )
+ 
+diff --git a/3rdparty/perfparser/app/demangler.cpp b/3rdparty/perfparser/app/demangler.cpp
 index c2c6959..475c17c 100644
---- a/perfparser/app/demangler.cpp
-+++ b/perfparser/app/demangler.cpp
+--- a/3rdparty/perfparser/app/demangler.cpp
++++ b/3rdparty/perfparser/app/demangler.cpp
 @@ -22,6 +22,10 @@
  #include <QLibrary>
  #include <QDebug>
@@ -57,3 +66,57 @@ index c2c6959..475c17c 100644
      // fast path, some languages (like rust since 1.37 or d) share a common prefix
      // try these first
      for (const auto& demangler : std::as_const(m_demanglers)) {
+diff --git a/3rdparty/perfparser/app/main.cpp b/3rdparty/perfparser/app/main.cpp
+index 3dba310..968db1f 100644
+--- a/3rdparty/perfparser/app/main.cpp
++++ b/3rdparty/perfparser/app/main.cpp
+@@ -141,7 +141,7 @@ std::unique_ptr<QIODevice> initInfile(const QCommandLineParser& parser, const QC
+     return std::make_unique<PerfStdin>();
+ }
+ 
+-int main(int argc, char *argv[])
++int perfparser_main(int argc, char *argv[])
+ {
+     QCoreApplication::setApplicationName(QStringLiteral("perfparser"));
+     QCoreApplication::setApplicationVersion(QStringLiteral("10.0"));
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 7424533..7ea7848 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -116,6 +116,7 @@ target_link_libraries(
+     KF${QT_MAJOR_VERSION}::Parts
+     KF${QT_MAJOR_VERSION}::I18n
+     models
++    hotspot-perfparser
+     PrefixTickLabels
+     KDAB::kddockwidgets
+ )
+diff --git a/src/main.cpp b/src/main.cpp
+index 1da2636..0b51b06 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -86,8 +86,12 @@ std::unique_ptr<QCoreApplication> createApplication(int& argc, char* argv[])
+ }
+ }
+ 
++int perfparser_main(int argc, char *argv[]);
+ int main(int argc, char** argv)
+ {
++    if(!qEnvironmentVariableIsEmpty("RUN_PERFPARSER")){
++        return perfparser_main(argc, argv);
++    }
+     KLocalizedString::setApplicationDomain("hotspot");
+     QCoreApplication::setOrganizationName(QStringLiteral("KDAB"));
+     QCoreApplication::setOrganizationDomain(QStringLiteral("kdab.com"));
+diff --git a/src/parsers/perf/perfparser.cpp b/src/parsers/perf/perfparser.cpp
+index 52ee2e2..bf7f4a8 100644
+--- a/src/parsers/perf/perfparser.cpp
++++ b/src/parsers/perf/perfparser.cpp
+@@ -660,6 +660,7 @@ QProcessEnvironment perfparserEnvironment(const QStringList& debuginfodUrls)
+         env.insert(envVar, debuginfodUrls.join(separator) + separator + defaultUrls);
+     }
+ 
++    env.insert(QStringLiteral("RUN_PERFPARSER"), QStringLiteral("true"));
+     return env;
+ }
+ }
