@@ -34,7 +34,7 @@ jobs:
         tar xf ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot.tar.gz 
         ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/relocate-sdk.sh
         find . -type d -name "sysroot" -exec sh -c 'for d; do rm -f "$d"/usr/lib/*.so; done' _ {} +
-        rm ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/bin/python ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/bin/python3
+        rm ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/bin/python3.14 ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/bin/python3
         git clone https://github.com/kdab/hotspot src 
         cd src
         git submodule update --init
