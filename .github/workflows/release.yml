@@ -42,7 +42,7 @@ jobs:
         patch -p1 < ../breeze.patch
         mkdir b
         cd b
-        cmake .. -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=../../${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake || true
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=../../${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake || true
         make -j4 hotspot
         
     - name: 🔍 4. 像素级“验尸”核验：确保它是纯静态无依赖金身
