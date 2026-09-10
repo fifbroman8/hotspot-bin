@@ -1,8 +1,8 @@
 diff --git a/3rdparty/perfparser.cmake b/3rdparty/perfparser.cmake
-index 18b62b3..c6af28c 100644
+index c45a83a..c6af28c 100644
 --- a/3rdparty/perfparser.cmake
 +++ b/3rdparty/perfparser.cmake
-@@ -38,9 +38,11 @@ add_library(libhotspot-perfparser STATIC
+@@ -38,6 +38,7 @@ add_library(libhotspot-perfparser STATIC
  target_link_libraries(libhotspot-perfparser
  PUBLIC
      Qt::Core
@@ -10,11 +10,7 @@ index 18b62b3..c6af28c 100644
      Qt::Network
      ${LIBDW_LIBRARIES}
      ${LIBELF_LIBRARIES}
-+    iberty
- )
- 
- if (Zstd_FOUND)
-@@ -58,7 +60,7 @@ add_feature_info(debuginfod HAVE_DWFL_GET_DEBUGINFOD_CLIENT "libdwfl and libdebu
+@@ -59,7 +60,7 @@ add_feature_info(debuginfod HAVE_DWFL_GET_DEBUGINFOD_CLIENT "libdwfl and libdebu
  
  configure_file(perfparser/app/config-perfparser.h.in perfparser/app/config-perfparser.h)
  
@@ -23,53 +19,6 @@ index 18b62b3..c6af28c 100644
      perfparser/app/main.cpp
  )
  
-diff --git a/3rdparty/perfparser/app/demangler.cpp b/3rdparty/perfparser/app/demangler.cpp
-index c2c6959..475c17c 100644
---- a/3rdparty/perfparser/app/demangler.cpp
-+++ b/3rdparty/perfparser/app/demangler.cpp
-@@ -22,6 +22,10 @@
- #include <QLibrary>
- #include <QDebug>
- 
-+extern "C" {
-+#include <libiberty/demangle.h>
-+}
-+
- /* Demangler specification
-  * int demangler(const char* mangledSymbol, char* demangledBuffer, size_t bufferSize)
-  *
-@@ -36,12 +40,29 @@ bool startsWith(const char* string, const QByteArray& prefix) {
- 
- Demangler::Demangler()
- {
--    loadDemangleLib(QStringLiteral("rustc_demangle"), "rustc_demangle", QByteArrayLiteral("_R"));
--    loadDemangleLib(QStringLiteral("d_demangle"), "demangle_symbol", QByteArrayLiteral("_D"));
-+    //loadDemangleLib(QStringLiteral("rustc_demangle"), "rustc_demangle", QByteArrayLiteral("_R"));
-+    //loadDemangleLib(QStringLiteral("d_demangle"), "demangle_symbol", QByteArrayLiteral("_D"));
- }
- 
- bool Demangler::demangle(const char *mangledSymbol, char *demangleBuffer, size_t demangleBufferLength)
- {
-+    if (!mangledSymbol || !demangleBuffer || demangleBufferLength == 0) {
-+        return false;
-+    }
-+
-+    int options = DMGL_AUTO | DMGL_ANSI;
-+    char* result = cplus_demangle(mangledSymbol, options);
-+
-+    if (result != nullptr) {
-+        strncpy(demangleBuffer, result, demangleBufferLength - 1);
-+        demangleBuffer[demangleBufferLength - 1] = '\0';
-+
-+        free(result);
-+        return true;
-+    }
-+
-+    return false;
-+
-     // fast path, some languages (like rust since 1.37 or d) share a common prefix
-     // try these first
-     for (const auto& demangler : std::as_const(m_demanglers)) {
 diff --git a/3rdparty/perfparser/app/main.cpp b/3rdparty/perfparser/app/main.cpp
 index 3dba310..d8b12b4 100644
 --- a/3rdparty/perfparser/app/main.cpp
@@ -99,17 +48,17 @@ index 3dba310..d8b12b4 100644
      if (qEnvironmentVariableIsSet("PERFPARSER_DEBUG_WAIT")) {
  #ifdef Q_OS_LINUX
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 7424533..7ea7848 100644
+index 7424533..84f51d1 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -116,6 +116,7 @@ target_link_libraries(
-     KF${QT_MAJOR_VERSION}::Parts
+@@ -117,6 +117,7 @@ target_link_libraries(
      KF${QT_MAJOR_VERSION}::I18n
      models
-+    hotspot-perfparser
      PrefixTickLabels
++    hotspot-perfparser
      KDAB::kddockwidgets
  )
+ 
 diff --git a/src/main.cpp b/src/main.cpp
 index 1da2636..0b51b06 100644
 --- a/src/main.cpp
@@ -128,16 +77,16 @@ index 1da2636..0b51b06 100644
      QCoreApplication::setOrganizationName(QStringLiteral("KDAB"));
      QCoreApplication::setOrganizationDomain(QStringLiteral("kdab.com"));
 diff --git a/src/parsers/perf/perfparser.cpp b/src/parsers/perf/perfparser.cpp
-index 52ee2e2..6e64743 100644
+index 52ee2e2..e38b571 100644
 --- a/src/parsers/perf/perfparser.cpp
 +++ b/src/parsers/perf/perfparser.cpp
-@@ -660,6 +660,7 @@ QProcessEnvironment perfparserEnvironment(const QStringList& debuginfodUrls)
+@@ -659,6 +659,7 @@ QProcessEnvironment perfparserEnvironment(const QStringList& debuginfodUrls)
+         const auto separator = QLatin1Char(' ');
          env.insert(envVar, debuginfodUrls.join(separator) + separator + defaultUrls);
      }
- 
 +    env.insert(QStringLiteral("RUN_PERFPARSER"), QStringLiteral("true"));
+ 
      return env;
- }
  }
 @@ -1619,8 +1620,9 @@ bool PerfParser::initParserArgs(const QString& path)
      // check perfparser and set initial values
